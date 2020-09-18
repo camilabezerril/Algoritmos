@@ -1,5 +1,5 @@
 # EPs-COO
- Algoritmos desenvolvidos durante a matéria de Computação Orientada à Objetos
+ Algoritmos desenvolvidos em linguagem Java durante a disciplina de Computação Orientada à Objetos
  
  ## EP1: Criação de componentes do jogo Pong
  
