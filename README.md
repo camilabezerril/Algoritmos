@@ -1,3 +1,3 @@
 # Algoritmos
- Algoritmos desenvolvidos para aprendizado
+ Algoritmos desenvolvidos para aprendizagem durante a graduação de Sistemas de Informação
  
