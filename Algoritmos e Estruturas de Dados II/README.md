@@ -1,5 +1,5 @@
 # EPs-AEDII
- Algoritmos desenvolvidos durante a matéria de Algoritmos e Estruturas de Dados II
+ Algoritmos desenvolvidos em linguagem Python durante a disciplina de Algoritmos e Estruturas de Dados II
  
  ## EP1: Revisão de AEDI
  
