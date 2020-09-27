@@ -1,5 +1,6 @@
 # EPs-AEDII
  Algoritmos desenvolvidos em linguagem Python durante a disciplina de Algoritmos e Estruturas de Dados II
+ com o objetivo de interpretar dados adquiridos por meio de uma pesquisa de Origem e Destino exportados para um CSV.
  
  ## EP1: Revisão de AEDI
  
