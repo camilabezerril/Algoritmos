@@ -13,21 +13,21 @@ void iniciarJogo(LISTA_CIRCULAR *soldados, LISTA_LIGADA *azarados, int valorT) {
     int chance = 0;
     PONT_C pos;
 
-    printf("\nOBS: This first k value is the one that defines where the count should start\n");
+    printf("\nOBS: Este primeiro valor k define onde a contagem deve comecar\n");
     pos = soldados->cabeca->prox;
     pos = sortearSoldado(soldados, &pos); //sorteia um soldado para começar a contagem
 
     while (qtdNomesLista_C(soldados) > 1) {
 
-        printf("\n----------------------------- START OF ROUND -----------------------------\n");
+        printf("\n----------------------------- INICIO DA RODADA -----------------------------\n");
 
-        printf("\nLIST OF SOLDIERS AT THE BEGINNING\n");
+        printf("\nLISTA DE SOLDADOS INICIAL:\n");
         exibirLista_C(soldados);
 
-        printf("The count will now start on %s\n", pos->reg.nome_soldado);
+        printf("A contagem deveria comecar no %s\n", pos->reg.nome_soldado);
 
         PONT_C novoAzarado = sortearSoldado(soldados, &pos);
-        printf("\nThe new unlucky one is %s\n", novoAzarado->reg.nome_soldado);
+        printf("\nO novo azarado e %s\n", novoAzarado->reg.nome_soldado);
 
         //a contagem irá iniciar no próximo do novoAzarado na próxima rodada
         if (novoAzarado->prox != soldados->cabeca)
@@ -45,7 +45,7 @@ void iniciarJogo(LISTA_CIRCULAR *soldados, LISTA_LIGADA *azarados, int valorT) {
         chance++;                //A chance de alguém retornar da lista de azarados é aumentada
 
         if (qtdNomesLista_C(soldados) == 1) {
-            printf("\nActually... it seems that the soldier %s is the only one remaining...", soldados->cabeca->prox);
+            printf("\nNa verdade... parece que o soldado %s e o unico que esta na roda...", soldados->cabeca->prox);
             break;
         }
         if (chance % valorT == 0)
@@ -55,11 +55,11 @@ void iniciarJogo(LISTA_CIRCULAR *soldados, LISTA_LIGADA *azarados, int valorT) {
         exibirLista_L(azarados);
         exibirLista_C(soldados); 
 
-        printf("------------------------------ END OF ROUND ------------------------------\n");
+        printf("------------------------------ FIM DA RODADA ------------------------------\n");
     }
 
     if (qtdNomesLista_C(soldados) == 1)
-        printf("\nThe soldier %s should be the one to take the horse!\n\n", soldados->cabeca->prox);
+        printf("\nO soldado %s deve pegar o cavalo!\n\n", soldados->cabeca->prox);
 }
 
 PONT_C sortearSoldado(LISTA_CIRCULAR *soldados, PONT_C *pos) {
@@ -68,7 +68,7 @@ PONT_C sortearSoldado(LISTA_CIRCULAR *soldados, PONT_C *pos) {
     PONT_C atual;
 
     k = rand() % 15;
-    printf("The k value to a new unlucky soldier is: %i\n", k);
+    printf("O valor k para um novo soldado azarado e: %i\n", k);
 
     atual = soldados->cabeca->prox;
 
@@ -92,7 +92,7 @@ void resgatarAzarado(LISTA_LIGADA *azarados, LISTA_CIRCULAR *soldados) {
     int k, i;
 
     k = rand() % qtdNomesLista_L(azarados);
-    printf("\n\nThe k value to a rescue soldier is: %i\n", k);
+    printf("\n\nO valor k para resgatar um soldado e: %i\n", k);
 
     atual = azarados->inicio;
 
@@ -106,12 +106,12 @@ void resgatarAzarado(LISTA_LIGADA *azarados, LISTA_CIRCULAR *soldados) {
         strcpy(regC.nome_soldado, atual->reg.nome_soldado);
         regC.vezes = atual->reg.vezes;
 
-        printf("The unlucky soldier %s is luckier than we thought, he's back to the game!\n\n", atual->reg.nome_soldado);
+        printf("O azarado %s tem mais sorte do que pensavamos, ele esta de volta a roda!\n\n", atual->reg.nome_soldado);
         insercaoLista_C(soldados, regC);
         excluirDaLista_L(azarados, atual->reg);
 
     } else {
-        printf("\nThe unlucky one %s tried his way back, but it wasn't enough...\n", atual->reg.nome_soldado);
+        printf("\nO azarado %s tentou voltar a roda, mas infelizmente não conseguiu...\n", atual->reg.nome_soldado);
     }
 }
 
@@ -131,20 +131,20 @@ int main() {
     while (true) {
 
         system("cls");
-        printf("\n//-------------Menu-------------//\n");
-        printf("1 - Insert a name into the list\n");
-        printf("2 - Delete a name of the list\n");
-        printf("3 - Reset list\n");
-        printf("4 - Insert a t value and start the game\n");
-        printf("5 - Exit\n\n");
+        printf("\n//------------- Menu -------------//\n");
+        printf("1 - Inserir um nome na lista\n");
+        printf("2 - Deletar um nome da lista\n");
+        printf("3 - Reiniciar lista\n");
+        printf("4 - Inserir um valor t e iniciar o jogo\n");
+        printf("5 - Sair\n\n");
 
-        printf("\nThe current list of soldiers: \n");
+        printf("\nA lista atual de soldados e: \n");
         exibirLista_C(&Soldados);
 
-        printf("\nThe current list of unlucky soldiers:");
+        printf("\nA lista atual de azarados e:");
         exibirLista_L(&Azarados);
 
-        printf("\nChoose an option on the menu: ");
+        printf("\nEscolha uma opcao no menu ");
         scanf("%i", &resposta);
 
         int qtdnomes;
@@ -157,7 +157,7 @@ int main() {
                 REGISTRO_C reg;
 
                 system("cls");
-                printf("\nHow many names are gonna be on the list? ");
+                printf("\nQuantos nomes terao na lista? ");
                 scanf("%d", &qtdnomes);
                 system("cls");
 
@@ -173,7 +173,7 @@ int main() {
                 system("cls");
                 exibirLista_C(&Soldados);
 
-                printf("Do you wish to go back to the menu? [y/n]\n");
+                printf("Deseja voltar ao menu? [y/n]\n");
                 scanf("%s", &retornarmenu);
             }
             break;
@@ -183,14 +183,14 @@ int main() {
                 REGISTRO_C reg;
                 system("cls");
 
-                printf("\nType a name to be deleted: ");
+                printf("\nDigite um nome para ser deletado ");
                 scanf("%s", reg.nome_soldado);
 
                 exibirLista_C(&Soldados);
                 excluirDaLista_C(&Soldados, reg);
                 exibirLista_C(&Soldados);
 
-                printf("Do you wish to go back to the menu? [y/n]\n");
+                printf("Deseja voltar ao menu? [y/n]\n");
                 scanf("%s", &retornarmenu);
             }
             break;
@@ -203,8 +203,8 @@ int main() {
                 reinicializarLista_C(&Soldados);
                 reinicializarLista_L(&Azarados);
 
-                printf("The list has been reset\n\n");
-                printf("Do you wish to go back to the menu? [y/n]\n");
+                printf("A lista foi reiniciada\n\n");
+                printf("Deseja voltar ao menu? [y/n]\n");
                 scanf("%s", &retornarmenu);
             }
             break;
@@ -215,17 +215,17 @@ int main() {
                 int valorT;
 
                 system("cls");
-                printf("Type a t value which the unlucky ones will be given a new chance: \n");
+                printf("Digite um valor t no qual os azarados terao uma nova chance: \n");
                 scanf("%i", &valorT);
                 system("cls");
 
-                printf("The soldiers list at the beginning is: \n");
+                printf("A lista de soldados no comeco do jogo e: \n");
                 exibirLista_C(&Soldados);
-                printf("The t value chosen was: %i\n", valorT);
+                printf("O valor t escolhido foi: %i\n", valorT);
 
                 iniciarJogo(&Soldados, &Azarados, valorT);
 
-                printf("Do you wish to go back to the menu? [y/n]\n");
+                printf("Deseja voltar ao menu? [y/n]\n");
                 scanf("%s", &retornarmenu);
             }
             break;
