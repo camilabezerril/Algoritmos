@@ -10,6 +10,8 @@
  ## EP3: Procurando Componentes Conexas
  Utilizando: listas/dicionário em python para construção do grafo
  
+ Obs: Devido ao tamanho do arquivo, foi utilizado um DFS não recursivo.
+ 
  ## EP4: Encontrando Diâmetro da Componente Gigante
  
  ## EP5: Modelo de Contágio SIR Simples Usando Grafos
