@@ -13,11 +13,12 @@ class AFN:
         return
 
     def visita_estados(self, estado_atual, index):
-        if self.reconhece == 0:  # Evita recursões infinitas em alguns casos.
-            if index == len(self.cadeia):
-                bool_estado = estado_atual in self.aceitos
+        if self.reconhece == 0:
+            # Evita recursões infinitas em alguns casos.
+            # Ex: Todos os estados tem transição epsilon, mas a cadeia toda já foi lida em algum momento.
 
-                if bool_estado:
+            if index == len(self.cadeia):
+                if estado_atual in self.aceitos:
                     self.reconhece = 1
 
                 # Checa se o último estado chego pela cadeia está conectado a outro por epsilon.
@@ -25,7 +26,7 @@ class AFN:
                     for estado_possivel in self.transicoes[estado_atual, 0]:
                         self.visita_estados(estado_possivel, index)
 
-                return bool_estado
+                return
 
             elif index < len(self.cadeia):
                 simbolo_atual = self.cadeia[index]
@@ -45,14 +46,19 @@ class AFN:
         self.cadeia = cadeia
         index = 0
         estado_atual = self.inicio
+        reconhecer_possivel = False
 
-        if (cadeia[index] == 0) and (estado_atual not in self.estados_epsilon):  # Testa cadeia vazia
-            # Checa se mesmo com cadeia vazia, há alguma conexão epsilon
-            # não precisando ler quaisquer simbolos para percorrer, se houver.
-            if self.inicio in self.aceitos:
-                self.reconhece = 1
-        else:
-            self.visita_estados(estado_atual, index)
+        for simbolo in self.cadeia:  # Evita recursões infinitas em alguns casos
+            reconhecer_possivel = simbolo in self.alfabeto
+
+        if reconhecer_possivel:
+            if (cadeia[index] == 0) and (estado_atual not in self.estados_epsilon):  # Testa cadeia vazia
+                # Checa se mesmo com cadeia vazia, há alguma conexão epsilon
+                # não precisando ler quaisquer simbolos para percorrer, se houver.
+                if self.inicio in self.aceitos:
+                    self.reconhece = 1
+            else:
+                self.visita_estados(estado_atual, index)
 
         # Só retorna True se a cadeia toda foi lida e está no estado final
         # Se a cadeia não foi lida por inteiro, a recursão retorna None

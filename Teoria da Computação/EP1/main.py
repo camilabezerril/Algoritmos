@@ -5,7 +5,7 @@ with open('ArqTeste.txt') as file:
 
     for i in range(n_automatos):
 
-        print("\n------------- AUTÔMATO {0} ------------- \n".format(i))
+        print("\n------------- AUTÔMATO {0} ------------- \n".format(i + 1))
 
         # CRIACAO DO AUTOMATO
 
@@ -84,10 +84,8 @@ with open('ArqTeste.txt') as file:
         # RESULTADOS EM TXT
 
         fileSaida = open('ArqSaida.txt', 'a')
-
         for item in resultado:
             fileSaida.write(str(item) + " ")
-
         fileSaida.write("\n")
 
 fileSaida.close()
