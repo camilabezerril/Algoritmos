@@ -13,31 +13,32 @@ class AFN:
         return
 
     def visita_estados(self, estado_atual, index):
-        if index == len(self.cadeia):
-            bool_estado = estado_atual in self.aceitos
+        if self.reconhece == 0:  # Evita recursões infinitas em alguns casos.
+            if index == len(self.cadeia):
+                bool_estado = estado_atual in self.aceitos
 
-            if bool_estado:
-                self.reconhece = 1
+                if bool_estado:
+                    self.reconhece = 1
 
-            # Checa se o último estado chego pela cadeia está conectado a outro por epsilon.
-            if estado_atual in self.estados_epsilon:
-                for estado_possivel in self.transicoes[estado_atual, 0]:
-                    self.visita_estados(estado_possivel, index)
+                # Checa se o último estado chego pela cadeia está conectado a outro por epsilon.
+                if estado_atual in self.estados_epsilon:
+                    for estado_possivel in self.transicoes[estado_atual, 0]:
+                        self.visita_estados(estado_possivel, index)
 
-            return bool_estado
+                return bool_estado
 
-        elif index < len(self.cadeia):
-            simbolo_atual = self.cadeia[index]
-            funcao = (estado_atual, simbolo_atual)
+            elif index < len(self.cadeia):
+                simbolo_atual = self.cadeia[index]
+                funcao = (estado_atual, simbolo_atual)
 
-            if funcao in self.transicoes.keys():
-                for estado_possivel in self.transicoes[funcao]:
-                    self.visita_estados(estado_possivel, index + 1)
+                if funcao in self.transicoes.keys():
+                    for estado_possivel in self.transicoes[funcao]:
+                        self.visita_estados(estado_possivel, index + 1)
 
-            # Checa se há alguma conexão epsilon no meio da cadeia
-            if estado_atual in self.estados_epsilon:
-                for estado_possivel in self.transicoes[estado_atual, 0]:
-                    self.visita_estados(estado_possivel, index)
+                # Checa se há alguma conexão epsilon no meio da cadeia
+                if estado_atual in self.estados_epsilon:
+                    for estado_possivel in self.transicoes[estado_atual, 0]:
+                        self.visita_estados(estado_possivel, index)
 
     def reconhece_cadeias(self, cadeia):
         self.reconhece = 0
