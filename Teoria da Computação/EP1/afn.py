@@ -8,7 +8,6 @@ class AFN:
         self.transicoes = transicoes
         self.inicio = inicio
         self.aceitos = aceitos
-        self.estado_atual = inicio
         self.estados_epsilon = epsilon
         return
 
