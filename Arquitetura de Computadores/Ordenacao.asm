@@ -56,18 +56,20 @@ lerBuffer:
 	add 	$t0, $t0, $s1         		# acerta numbers[i]
 	sw 	$t4, 0($t0)
     	
+    	addi	$s4, $s4, 1			# conta numero de caracteres entrando (usado na saida depois)
 	addi 	$s0, $s0, 1      		# incrementa endereço do buffer (vai pra prox numero)
 	j 	lerBuffer
 
 spaceFound:
 	li 	$t4, 0				# zera variavel da conversao str -> int
 	addi 	$s0, $s0, 1      		# incrementa endereço do buffer (pula espaço)
+	addi	$s4, $s4, 1			# conta numero de caracteres entrando (usado na saida depois) + 1
 	addi 	$s2, $s2, 1			# O número de elementos é o número de espaços + 1 (somado posteriormente)
 						# $s2 também é usado como i para incrementar array para novo número
 	
     	j 	lerBuffer
 
-numElem:
+numElem:	
 	addi 	$s2, $s2, 1			# O número de elementos é o número de espaços + 1
 	
 # ------------------------------- PROGRAMA PRINCIPAL -------------------------------- #
@@ -215,14 +217,19 @@ fimQuick:
 
 # $s0 = array dos numeros ordenados a serem escritos
 # $s2 = tamanho do vetor
+# $s4 = tamanho de caracteres que entrou
 
 usarBuffers:
-	#la 	$s1, buffer_ordenados
+	la 	$s1, buffer_ordenados
+	addi	$s4, $s4, 1 			# 1 adicionado para o espaço após o ultimo numero (devido ao loop)
 	li 	$t0, 0
 	li	$t1, 0
 	li	$t2, 0
 	li	$t3, 0
 	li 	$t4, 0
+	li	$t5, 0
+	li	$t6, 0
+	li	$t7, 0
 	
 escreverBuffers:
 	beq	$t0, $s2, abrirOut		# i = número de elementos do vetor? se sim, escrever buffer no arquivo
@@ -232,36 +239,49 @@ escreverBuffers:
    	lw 	$t1, 0($t1)
    	
    	itoa:
-   		la   $s3, temp + 30
-      		#add  $s3, $s3, 30   # seek the end
-      		sb   $0, 1($s3)     # null-terminated str
-      		li   $t2, '0'  
-      		sb   $t2, ($s3)     # init. with ascii 0      
-      		li   $t3, 10        # preload 10
-      		beq  $t1, $0, fimItoa  # end if 0
+   		la   	$s3, temp + 30
+      		sb   	$0, 1($s3)     				# null-terminated str
+      		li   	$t2, '0'       				# 0 => 48 em ascii  
+      		sb   	$t2, ($s3)    				# init. with ascii 0   
+      		li   	$t3, 10        				# preload 10
+      		beq  	$t1, $0, findNullTerminator  		# end if 0
       
 	loop:
-      		div  $t1, $t3       # a /= 10
-      		mflo $t1
-      		mfhi $t4            # get remainder
-      		add  $t4, $t4, $t2  # convert to ASCII digit
-      		sb   $t4, ($s3)     # store it
-      		sub  $s3, $s3, 1    # decrease buffer pointer
-      		bne  $t1, $0, loop  # if not zero, loop
-      		addi $s3, $s3, 1    # adjust buffer pointer
-      
-	fimItoa:
-		li $v0, 4
-   		la $a0, ($s3)
-   		syscall
-   		la $a0, newline
-   		syscall
+      		div  	$t1, $t3       				# a /= 10
+      		mflo 	$t1
+      		mfhi 	$t4           				# resto da divisão
+      		add  	$t4, $t4, $t2  				# convert to ASCII digit -- equivalente a 0x30 (-48 na primeira conversão)	
+      		sb   	$t4, ($s3)     				# store it
+      		sub  	$s3, $s3, 1    				# decrease buffer pointer
+      		bne  	$t1, $0, loop  				# if not zero, loop
+      		addi 	$s3, $s3, 1    				# adjust buffer pointer
    	
+   	findNullTerminator:    					# semelhante ao pular espaço, pulando null terminator
+   		lb 	$t6, 0($s3)
+   		beq	$t6, $0, found
+   		
+   		## 25 igual numero de caracteres de entrada mais null? porque??????????????????
+   		sb 	$t6, 25($s1) # adiciona novo numero sem null terminator
+   		
+   		addi	$s1, $s1, 1
+   		addi 	$s3, $s3, 1  
+   		j 	findNullTerminator
+   	
+   	found: 
+		li 	$t5, 32
+   		sb 	$t5, 25($s1) # adiciona espaço
+   		
+   		addi	$s1, $s1, 1
    	
    	addi	$t0, $t0, 1
-   	j escreverBuffers 			
-
+   	j 	escreverBuffers
+   	
+# ---------------------------- ABRIR ARQUIVO DE SAIDA E FECHAR PROGRAMA ------------------------- #		
 abrirOut:
+   	li 	$v0, 4
+   	la 	$a0, ($s1)
+   	syscall
+
 	li	$v0, 13          		# system call for open file
 	la	$a0, out        		# input file name
 	li	$a1, 1           		# flag for write-only
@@ -272,7 +292,7 @@ abrirOut:
 escreverOut:
 	li	$v0, 15				# 15 = write from file
 	move 	$a0, $s0      			# file descriptor 
-	la	$a1, ($s3)			# buffer to hold int charged in a1
+	la	$a1, ($s1)			# buffer to hold int charged in a1
 	li	$a2, 512			# Write 512 bytes - size of buffer
 	syscall
 	
@@ -284,4 +304,3 @@ fecharOut:
 fim:	
 	li 	$v0, 10         		# termina programa
 	syscall
-	
