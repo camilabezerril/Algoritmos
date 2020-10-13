@@ -32,7 +32,7 @@ lerIn:
 
 fecharIn:
 	li   	$v0, 16       			# system call for close file
-	move 	$a0, $s6      			# file descriptor to close
+	move 	$a0, $s0      			# file descriptor to close
 	syscall            			# close file
 	
 # -------------- CONTA ELEMENTOS, OS CONVERTE PARA INTEIRO E ARMAZENA EM ARRAY ---------------- #
@@ -76,14 +76,14 @@ numElem:
 
 # int *vetor (Vetor a ser ordenado): $s1 - endereço base
 # int tam (Tamanho do vetor a ser ordenado): $s2
-# int tipo (Tipo de ordenação a ser usada): $s3
+# int tipo (Tipo de ordenação a ser usada): $t3
 
 main:
-	li 	$s3, 0                     	# Define tipo ordenação (0 = selection, 1 = quick)
+	li 	$t3, 0                     	# Define tipo ordenação (0 = selection, 1 = quick)
 	
 	la 	$a0, ($s1)
 	la 	$a1, ($s2)
-	la 	$a2, ($s3)
+	la 	$a2, ($t3)
 	li	$a3, 0                          # Usado no quickSort para o index_menor
 	
 	beq 	$a2, $zero, selectionSort
@@ -91,7 +91,7 @@ main:
 	
 	add 	$s1, $zero, $v0		   	# tamanho do vetor resultante retorna em $v0
 	
-	j usarBuffers 	#INDA N FUNCIONA
+	j usarBuffers 	#AINDA N FUNCIONA
 
 # -------------------------------- SELECTION SORT --------------------------------- #
 
@@ -257,27 +257,28 @@ escreverBuffers:
       		addi 	$s3, $s3, 1    				# adjust buffer pointer
    	
    	findNullTerminator:    					# semelhante ao pular espaço, pulando null terminator
-   		lb 	$t6, 0($s3)
-   		beq	$t6, $0, found
+   		lbu 	$t5, 0($s3)
+   		beq	$t5, $0, found
    		
    		## 25 igual numero de caracteres de entrada mais null? porque??????????????????
-   		sb 	$t6, 25($s1) # adiciona novo numero sem null terminator
+   		sb 	$t5, 0($s1) # adiciona novo numero sem null terminator
    		
    		addi	$s1, $s1, 1
-   		addi 	$s3, $s3, 1  
+   		addi 	$s3, $s3, 1 
    		j 	findNullTerminator
    	
    	found: 
 		li 	$t5, 32
-   		sb 	$t5, 25($s1) # adiciona espaço
+   		sb 	$t5, 0($s1) # adiciona espaço
    		
    		addi	$s1, $s1, 1
-   	
+   	 
    	addi	$t0, $t0, 1
    	j 	escreverBuffers
    	
 # ---------------------------- ABRIR ARQUIVO DE SAIDA E FECHAR PROGRAMA ------------------------- #		
 abrirOut:
+	sub	$s1, $s1, $s4	# decrementa endereço para voltar ao ínicio da string
    	li 	$v0, 4
    	la 	$a0, ($s1)
    	syscall
