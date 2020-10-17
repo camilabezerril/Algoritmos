@@ -1,16 +1,15 @@
 .data
 # Arquivos
 in: .asciiz "in.txt"      		# Entrada
-out: .asciiz "out.txt"			# SaÃ­da
 
 # Buffers
-buffer: .space 512             		# Armazena ascii de nÃºmeros (Entrada)
-temp: .space 512			# Armazena temporariamente nÃºmero ascii
-buffer_ordenados: .space 512		# Armazena nÃºmeros ascii para colocar em txt (SaÃ­da)
+buffer: .space 512             		# Armazena ascii de números (Entrada)
+temp: .space 512			# Armazena temporariamente número ascii
+buffer_ordenados: .space 512		# Armazena números ascii para colocar em txt (Saída)
 
 # Vetor
 .align 4
-numbers: .space 512			# Armazena nÃºmeros em vetor
+numbers: .space 512			# Armazena números em vetor
 
 # Mensagens
 newline: .asciiz "\n"
@@ -18,26 +17,26 @@ newline: .asciiz "\n"
 .text
 
 main:	
-	# Registradores nÃ£o reutilizados:
-	# vetor ordenado pela funÃ§Ã£o ordena: $s0
-	# int *vetor (Vetor a ser ordenado): $s1 - endereÃ§o base
+	# Registradores não reutilizados:
+	# vetor ordenado pela função ordena: $s0
+	# int *vetor (Vetor a ser ordenado): $s1 - endereço base
 	# int tam (Tamanho do vetor a ser ordenado): $s2
-	# tamanho do vetor resultante da ordenaÃ§Ã£o: $s3
+	# tamanho do vetor resultante da ordenação: $s3
 	# quantidade de caracteres lidos na entrada: $s4
-	# buffer ascii com nÃºmeros ordenados: $s5
+	# buffer ascii com números ordenados: $s5
 
 	# Leitura de Arquivo de Entrada
 	jal iniciarLeitura
 	
-	# Interpretar nÃºmeros armazenados no buffer (Str -> Int)
+	# Interpretar números armazenados no buffer (Str -> Int)
 	jal iniciarBuffer_In
 	
 	la 	$a0, ($s1)
 	la 	$a1, ($s2)
-	la 	$a2, 0				# Define tipo ordenaÃ§Ã£o (0 = selection, 1 = quick)
-	li	$a3, 0                          # Define menor index do vetor (Usado no quickSort)
+	la 	$a2, 0				# Define menor index do vetor (Usado no quickSort)
+	li	$a3, 0                          # Define tipo ordenação (0 = selection, 1 = quick)
 	
-	# Ordenar nÃºmeros
+	# Ordenar números
 	jal ordena
 	
 	add 	$s3, $zero, $v0		   	# tamanho do vetor resultante retorna em $v0
@@ -45,7 +44,7 @@ main:
 	# Interpretar resultados para armazenar em buffer (Int -> Str)
 	jal iniciarBuffer_Out
 	
-	# Escrita de Arquivo de SaÃ­da e finaliza programa
+	# Escrita de Arquivo de Saída e finaliza programa
 	j iniciarEscrita
 
 # --------------------------------- LEITURA DO ARQUIVO -------------------------------------- #
@@ -96,13 +95,13 @@ iniciarBuffer_In:
 
 usarBuffer:
 	la 	$t4, buffer
-	la 	$s1, numbers             	# Guarda nÃºmeros em array
+	la 	$s1, numbers             	# Guarda números em array
 	
 lerBuffer:  
 	lbu 	$t1, 0($t4)  			# carrega um byte do buffer
-	beqz 	$t1, numElem  			# if $t1 == 0, ou seja, null terminator, entÃ£o finaliza indo para numElem
+	beqz 	$t1, numElem  			# if $t1 == 0, ou seja, null terminator, então finaliza indo para numElem
 	
-	beq 	$t1, 32, spaceFound		# desvia se encontrar espaÃ§o (ascii = 32)
+	beq 	$t1, 32, spaceFound		# desvia se encontrar espaço (ascii = 32)
 	
 	# Converte ascii para int
 	addi    $t1, $t1, -48    
@@ -110,25 +109,25 @@ lerBuffer:
     	add    	$t3, $t3, $t1       		# numero += array[s1]-'0'
     	
     	# Salva int em array
-    	sll 	$t0, $s2, 2           		# acerta i - sÃ³ incrementa em spacefound
+    	sll 	$t0, $s2, 2           		# acerta i - só incrementa em spacefound
 	add 	$t0, $t0, $s1         		# acerta numbers[i]
 	sw 	$t3, 0($t0)
     	
     	addi	$s4, $s4, 1			# conta numero de caracteres entrando (usado na saida depois)
-	addi 	$t4, $t4, 1      		# incrementa endereÃ§o do buffer (vai pra prox numero)
+	addi 	$t4, $t4, 1      		# incrementa endereço do buffer (vai pra prox numero)
 	j 	lerBuffer
 
 spaceFound:
 	li 	$t3, 0				# zera variavel da conversao str -> int
-	addi 	$t4, $t4, 1      		# incrementa endereÃ§o do buffer (pula espaÃ§o)
+	addi 	$t4, $t4, 1      		# incrementa endereço do buffer (pula espaço)
 	addi	$s4, $s4, 1			# conta numero de caracteres entrando (usado na saida depois)
-	addi 	$s2, $s2, 1			# O nÃºmero de elementos Ã© o nÃºmero de espaÃ§os + 1 (somado posteriormente)
-						# $s2 tambÃ©m Ã© usado como i para incrementar array para novo nÃºmero
+	addi 	$s2, $s2, 1			# O número de elementos é o número de espaços + 1 (somado posteriormente)
+						# $s2 também é usado como i para incrementar array para novo número
 	
     	j 	lerBuffer
 
 numElem:	
-	addi 	$s2, $s2, 1			# O nÃºmero de elementos Ã© o nÃºmero de espaÃ§os + 1
+	addi 	$s2, $s2, 1			# O número de elementos é o número de espaços + 1
 
 finalizarBuffer_In:
 	lw $t0, 0($sp)
@@ -140,15 +139,10 @@ finalizarBuffer_In:
 	
 	jr $ra
 
-# --------------------------------- INICIA ORDENAÃ‡ÃƒO -------------------------------------- #	
+# --------------------------------- INICIA ORDENAÇÃO -------------------------------------- #	
 ordena:
-	beq 	$a2, $zero, iniciarSelection
-	beq 	$a2, 1, iniciarQuick
-	
-	finalizaOrdena:
-	add	$v0, $v0, $zero			# tamanho do vetor resultante retorna em $v0
-	
-	jr	$ra		
+	beq 	$a3, $zero, iniciarSelection
+	beq 	$a3, 1, iniciarQuick	
 
 # ------------------------------------ SELECTION SORT ------------------------------------- #
 
@@ -168,7 +162,7 @@ ordena:
 
 # $t6 = i, $t7 = j, $t1 = index
 # $a1 = array.length, $a0 = arr
-# resultado estÃ¡ em $a0 num array
+# resultado está em $a0 num array
 
 iniciarSelection:
 	subi $sp, $sp, 32
@@ -207,6 +201,7 @@ forDentro:
    	
 atualizaIndex:
 	move 	$t1, $t7                        # index = j
+	add 	$t7, $t7, 1 			# incrementa j
 	j 	forDentro
    	
 troca:	
@@ -224,22 +219,22 @@ incrementaForFora:
 	j 	forFora
 
 fimSelection:
-	add 	$v0, $t7, $zero                 # retorna j, isto Ã©, qtd de elementos no vetor resultante
+	addi	$v0, $t6, 1			# retorna i + 1, isto é, qtd de elementos no vetor resultante               
 	
 	la 	$s0, numbers
 	la	$s0, ($a0)			# salva array ordenado em $s0
 	
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t2, 8($sp)
-	lw $t3, 12($sp)
-	lw $t4, 16($sp)
-	lw $t5, 20($sp)
-	lw $t6, 24($sp)
-	lw $t7, 28($sp)
-	addi $sp, $sp, 32
+	lw 	$t0, 0($sp)
+	lw 	$t1, 4($sp)
+	lw 	$t2, 8($sp)
+	lw 	$t3, 12($sp)
+	lw 	$t4, 16($sp)
+	lw 	$t5, 20($sp)
+	lw 	$t6, 24($sp)
+	lw 	$t7, 28($sp)
+	addi 	$sp, $sp, 32
 
-	j finalizaOrdena
+	jr 	$ra
 	
 # ----------------------------------- QUICK SORT - INCOMPLETO AINDA ---------------------------------- #
 
@@ -277,13 +272,13 @@ quickSort:
 	subi $sp, $sp, -20
 	sw $ra, 16($sp)
 	sw $fp, 12($sp)	
-	sw $a0, 8($sp)			# salva array atual
-	sw $a1, 4($sp)			# salva index_maior atual
-	sw $a3, 0($sp)			# salva index_menor atual		
+	sw $a0, 8($sp)			
+	sw $a1, 4($sp)			
+	sw $a2, 0($sp)					
 	move $fp, $sp
 	
 	slt $t1, $a1, $a1		# t1=1 if low < high, else 0
-	beq $t1, $zero, fimQuick	# if low >= high, quick
+	beq $t1, $zero, fimQuick	# if low >= high, fimQuick -> retorna todo a pilha da recursão?
 	
 	jal particionar
 	add $s0, $v0, $v0
@@ -292,6 +287,7 @@ quickSort:
 particionar:
 
 fimQuick:
+	jr $ra
 
 # ---------------------------- CONVERTE VETOR ORDENADO INT -> STR -------------------------- #
 
@@ -311,10 +307,10 @@ iniciarBuffer_Out:
 
 usarBuffers:
 	la 	$s5, buffer_ordenados
-	addi	$s4, $s4, 1			# adicionando espaÃ§o para caractere de espaÃ§o extra devido ao loop
+	addi	$s4, $s4, 1			# adicionando espaço para caractere de espaço extra devido ao loop
 	
 escreverBuffers:
-	beq	$t0, $s2, finalizarBuffer_Out	# i = nÃºmero de elementos do vetor? se sim, escrever buffer no arquivo
+	beq	$t0, $s2, finalizarBuffer_Out	# i = número de elementos do vetor? se sim, escrever buffer no arquivo
 	
 	sll 	$t1, $t0, 2			# acerta i
    	add 	$t1, $t1, $s0			# $s0[i]   	
@@ -331,14 +327,14 @@ escreverBuffers:
 	loop:
       		div  	$t1, $t3       				# a /= 10
       		mflo 	$t1
-      		mfhi 	$t4           				# resto da divisÃ£o
-      		add  	$t4, $t4, $t2  				# convert to ASCII digit -- equivalente a 0x30 (-48 na primeira conversÃ£o)	
+      		mfhi 	$t4           				# resto da divisão
+      		add  	$t4, $t4, $t2  				# convert to ASCII digit -- equivalente a 0x30 (-48 na primeira conversão)	
       		sb   	$t4, ($t6)     				# store it
       		sub  	$t6, $t6, 1    				# decrease buffer pointer
       		bne  	$t1, $0, loop  				# if not zero, loop
       		addi 	$t6, $t6, 1    				# adjust buffer pointer
    	
-   	findNullTerminator:    					# semelhante ao pular espaÃ§o, pulando null terminator
+   	findNullTerminator:    					# semelhante ao pular espaço, pulando null terminator
    		lbu 	$t5, 0($t6)
    		beq	$t5, $0, found
    		
@@ -350,10 +346,10 @@ escreverBuffers:
    	
    	found: 
 		li 	$t5, 32
-   		sb 	$t5, 0($s5) # adiciona espaÃ§o
+   		sb 	$t5, 0($s5) # adiciona espaço
    		
    		addi	$s5, $s5, 1
-
+	
    	addi	$t0, $t0, 1
    	j 	escreverBuffers
    	
@@ -371,7 +367,7 @@ finalizarBuffer_Out:
 
 # ---------------------- ESCREVE EM ARQUIVO DE SAIDA E FINALIZA PROGRAMA ------------------------ #
 iniciarEscrita:
-	sub	$s5, $s5, $s4			# decrementa endereÃ§o para voltar ao Ã­nicio da string
+	sub	$s5, $s5, $s4			# decrementa endereço para voltar ao ínicio da string
 
    	li 	$v0, 4
    	la 	$a0, ($s5)
@@ -379,14 +375,21 @@ iniciarEscrita:
    		
 abrirOut:
 	li	$v0, 13          		# system call for open file
-	la	$a0, out        		# input file name
-	li	$a1, 1           		# flag for write-only
+	la	$a0, in	        		# input file name
+	li	$a1, 9           		# flag for write (append)
 	li	$a2, 0           		# mode is ignored
 	syscall			 		# open a file 
 	move	$t0, $v0         		# save the file descriptor 
 	
 escreverOut:
 	li	$v0, 15				# 15 = write from file
+	move 	$a0, $t0      			# file descriptor
+	
+	la	$a1, newline			# Adiciona quebra de linha
+	la	$a2, 1
+	syscall
+	
+	li   	$v0, 15       			# system call for reading from file
 	move 	$a0, $t0      			# file descriptor 
 	la	$a1, ($s5)			# buffer to hold int charged in a1
 	la	$a2, ($s4)			# Escreve a qtd de caracteres que entrou
@@ -400,4 +403,3 @@ fecharOut:
 fim:	
 	li 	$v0, 10         		# termina programa
 	syscall
-	
