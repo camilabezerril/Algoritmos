@@ -16,7 +16,7 @@ public class glc {
 
     public static void lerGlc(){
         try {
-            Scanner ler = new Scanner(new FileReader(new File("inputTesteGLC.txt")));
+            Scanner ler = new Scanner(new FileReader(new File("inp-glc.txt")));
 
             while(ler.hasNextLine()){
                 //ler.nextLine(); --> // linha q dirá quantas gramáticas serão lidas = desnecessária devido ao while
@@ -53,7 +53,7 @@ public class glc {
 
     public static void testarCadeias(){
         try {
-            Scanner ler = new Scanner(new FileReader(new File("inputTesteCadeias.txt")));
+            Scanner ler = new Scanner(new FileReader(new File("inp-cadeias.txt")));
 
             int nCadeias = Integer.parseInt(ler.nextLine());
 
@@ -70,54 +70,76 @@ public class glc {
         if(cadeia.get(0).equals("&") && regras.get(inicial).contains("&")) return 1;
 
         int tamCadeia = cadeia.size();
-        String[][] cyk = criarMatrizCYK(tamCadeia);
+        String[][] cyk = new String[tamCadeia][tamCadeia];
 
-        //StringBuilder addVariavel = new StringBuilder();
+        StringBuilder addVariaveis = new StringBuilder();
 
         // Trata substrings de tamanho 1
         for(int j = 0; j < tamCadeia; j++){
             for (String variavel : variaveis){
                 if(regras.get(variavel).contains(cadeia.get(j))){
-                    cyk[0][j] = cyk[0][j] + variavel;
+                    addVariaveis.append(variavel);
                 }
             }
+            cyk[0][j] = addVariaveis.toString();
+            addVariaveis.delete( 0, addVariaveis.length());
         }
 
         // Passo 1: Definir o tamanho de substring atual
-        for(int tamSubstr = 2; tamSubstr < tamCadeia; tamSubstr++){       // Tamanho das substrings
+        for(int tamSubstr = 2; tamSubstr < tamCadeia + 1; tamSubstr++){       // Tamanho das substrings
 
             // Passo: 2: Definir o inicio da substring atual
-            for(int i = 0; i < tamCadeia - 1; i++){                       // Avança 1 para ler nova substring (cadeia.get(i) -> inicio)
+            for(int i = 0; i < tamCadeia - tamSubstr + 1; i++){                       // Avança 1 para ler nova substring (cadeia.get(i) -> inicio)
                 int j = i + tamSubstr - 1;                                // Posição do final desta nova substring (para saber até onde ler)
 
                 // Passo: 3: Splitar substring atual
                 for(int k = i; k < j; k++){
-                    List<String> BxC = new ArrayList<>();
 
-                    // Passo 4: Procurar resultados anteriores dado uma parte do split (esquerda ou direita)
-                    List<String> B  = Arrays.asList(cyk[k - i][i].split(""));                       // Procura resultados anteriores com a primeira parte do split
-                    List<String> C  = Arrays.asList(cyk[j - (k + 1)][k + 1].split(""));             // Procura resultados anteriores com a segunda parte do split
+                    try {
+                        // Passo 4: Procurar resultados anteriores dado uma parte do split (esquerda ou direita)
+                        List<String> B = Arrays.asList(cyk[k - i][i].split(""));                                  // Procura resultados anteriores com a primeira parte do split
+                        List<String> C = Arrays.asList(cyk[j - (k + 1)][k + 1].split(""));             // Procura resultados anteriores com a segunda parte do split
 
-                    // Passo 5: Produto Cartesiano B x C
-                    BxC = produtoCartesiano(B, C);
-                    System.out.print(BxC + " ");
+                        // Passo 5: Produto Cartesiano B x C
+                        List<String> BxC = produtoCartesiano(B, C);
+                        //System.out.print(BxC + " ");
 
-                    // Passo 6: Checar se B x C produziu variaveis que existem nas regras
-                    for(String variavel : variaveis)
-                        for(String possivelBC : BxC)
-                            if(regras.get(variavel).contains(possivelBC)) {
+                        // Passo 6: Checar se B x C produziu variaveis que existem nas regras
+                        for (String variavel : variaveis)
+                            for (String possivelBC : BxC)
+                                if (regras.get(variavel).contains(possivelBC)) {
 
-                                // Passo 7: Se existe nas regras -> guardar na matriz simbolos a esquerda das regras (com espaços) obs: diagonal
-                                cyk[tamSubstr - 1][i] = cyk[tamSubstr - 1][i] + variavel;
-                            }
-                    System.out.println(cyk[tamSubstr - 1][i] + " ");
+                                    // Passo 7: Se existe nas regras -> guardar na matriz simbolos a esquerda das regras
+                                    if(!addVariaveis.toString().contains(variavel)) addVariaveis.append(variavel);
+                                }
+                    } catch (NullPointerException e){
+                        //null pointer: Não há nenhuma variável neste local da matriz
+                    }
+
+                    String temp = addVariaveis.toString();
+
+                    if(cyk[tamSubstr - 1][i] == null) cyk[tamSubstr - 1][i] = temp;
+                    else {
+                        cyk[tamSubstr - 1][i] = cyk[tamSubstr - 1][i] + temp;
+
+                        // Retira variáveis repetidas
+                        StringBuilder sb = new StringBuilder();
+                        cyk[tamSubstr - 1][i].chars().distinct().forEach(c -> sb.append((char) c));
+                        cyk[tamSubstr - 1][i] = sb.toString();
+                    }
+
+                    addVariaveis.delete( 0, addVariaveis.length());
                 }
             }
         }
 
+        System.out.println();
+        System.out.println("Matriz: ");
         for(int i = 0; i < tamCadeia; i++) {
             for (int j = 0; j < tamCadeia; j++) {
-                System.out.print(cyk[i][j] + " ");                      // Evita valores null na tabela (podendo concatenar)
+                if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + "  |  ");                      // Evita valores null na tabela (podendo concatenar)
+                else if (cyk[i][j] == null) System.out.print("x  |  ");
+                else System.out.print("0  |  "); // Faz parte do triangulo, porém é nulo (sem variáveis)
             }
             System.out.println();
         }
@@ -125,16 +147,6 @@ public class glc {
         List<String> S = Arrays.asList(cyk[tamCadeia - 1][0].split(""));
         if(S.contains(inicial)) return 1;
         return 0;
-    }
-
-    public static String[][] criarMatrizCYK(int tamCadeia){
-        String[][] cyk = new String[tamCadeia][tamCadeia];
-        for(int i = 0; i < tamCadeia; i++) {
-            for (int j = 0; j < tamCadeia; j++) {
-                cyk[i][j] = "";                      // Evita valores null na tabela (podendo concatenar)
-            }
-        }
-        return cyk;
     }
 
     public static List<String> produtoCartesiano(List<String> B, List<String> C){
@@ -151,7 +163,7 @@ public class glc {
         boolean fim = false;
         if(cadeiaAtual == 0) fim = true;
 
-        try(FileWriter fw = new FileWriter("outTesteStatus.txt", true); //true: escrever sem sobreescrever
+        try(FileWriter fw = new FileWriter("out-status.txt", true); //true: escrever sem sobreescrever
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter out = new PrintWriter(bw))
         {
