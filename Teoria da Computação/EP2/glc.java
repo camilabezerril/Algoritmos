@@ -9,6 +9,7 @@ public class glc {
     private static List<String> variaveis = new ArrayList<>();
     private static List<String> terminais = new ArrayList<>();
     private static Map<String, List<String>> regras = new HashMap<>();
+    private static String[][] cyk;
 
     public static void main(String[] args){
         lerGlc();
@@ -40,9 +41,7 @@ public class glc {
 
                     regras.get(regraAtual.get(0)).add(simbolos);
                 }
-
                 System.out.println(regras);
-
                 testarCadeias();
             }
 
@@ -57,9 +56,19 @@ public class glc {
 
             int nCadeias = Integer.parseInt(ler.nextLine());
 
+            //Abrindo só pra escrever número de cadeias
+            try(FileWriter fw = new FileWriter("out-tabela.txt", true); //true: escrever sem sobreescrever
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw))
+            {
+                out.println(nCadeias);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             for(int i = 0; i < nCadeias; i++){
                 List<String> cadeia = Arrays.asList(ler.nextLine().split(" "));
-                escreverResultados(iniciarCYK(cadeia), (nCadeias - 1) - i);
+                escreverResultados(iniciarCYK(cadeia), cadeia);
             }
         } catch(IOException e){
             e.printStackTrace();
@@ -70,7 +79,7 @@ public class glc {
         if(cadeia.get(0).equals("&") && regras.get(inicial).contains("&")) return 1;
 
         int tamCadeia = cadeia.size();
-        String[][] cyk = new String[tamCadeia][tamCadeia];
+        cyk = new String[tamCadeia][tamCadeia];
 
         StringBuilder addVariaveis = new StringBuilder();
 
@@ -129,7 +138,6 @@ public class glc {
                         for(String elemento : tiraDuplicatas)
                             cyk[tamSubstr - 1][i] = cyk[tamSubstr - 1][i] + " " + elemento;
                     }
-
                     addVariaveis.delete( 0, addVariaveis.length());
                 }
             }
@@ -137,7 +145,7 @@ public class glc {
 
         System.out.println();
         System.out.println("Matriz: ");
-        for(int i = 0; i < tamCadeia; i++) {
+        for(int i = tamCadeia - 1; i > -1; i--) {
             for (int j = 0; j < tamCadeia; j++) {
                 if(cyk[i][j] != null && cyk[i][j].equals(" ")) System.out.print("0 | ");
                 else if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + " | ");                      // Evita valores null na tabela (podendo concatenar)
@@ -154,31 +162,40 @@ public class glc {
 
     public static List<String> produtoCartesiano(List<String> B, List<String> C){
         List<String> BxC = new ArrayList<>();
-
         for(String b : B)
-            for(String c : C) {
-                //System.out.println("b: " + b + " ; c: " + c);
+            for(String c : C)
                 BxC.add(b + c);
-            }
-
         return BxC;
     }
 
-    public static void escreverResultados(int resultado, int cadeiaAtual){
-        boolean fim = false;
-        if(cadeiaAtual == 0) fim = true;
-
+    public static void escreverResultados(int resultado, List<String> cadeia){
         try(FileWriter fw = new FileWriter("out-status.txt", true); //true: escrever sem sobreescrever
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter out = new PrintWriter(bw))
         {
             out.print(resultado + " ");
-            if (fim) out.print("\n"); // Ultima cadeia --> quebra linha
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        //Escrever matriz
+        try(FileWriter fw = new FileWriter("out-tabela.txt", true); //true: escrever sem sobreescrever
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter out = new PrintWriter(bw))
+        {
+            if(cadeia.get(0).equals("&")) out.println("&");
+            else {
+            for(String simbolo : cadeia)
+                out.print(simbolo + " ");
+
+            out.println();
+
+            for(int i = 0; i < cadeia.size(); i++)
+                for (int j = 0; j < cadeia.size(); j++)
+                       if(cyk[i][j] != null) out.println(i + " " + j + " " + cyk[i][j]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
