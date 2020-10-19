@@ -79,6 +79,7 @@ public class glc {
             for (String variavel : variaveis){
                 if(regras.get(variavel).contains(cadeia.get(j))){
                     addVariaveis.append(variavel);
+                    addVariaveis.append(" ");
                 }
             }
             cyk[0][j] = addVariaveis.toString();
@@ -97,12 +98,11 @@ public class glc {
 
                     try {
                         // Passo 4: Procurar resultados anteriores dado uma parte do split (esquerda ou direita)
-                        List<String> B = Arrays.asList(cyk[k - i][i].split(""));                                  // Procura resultados anteriores com a primeira parte do split
-                        List<String> C = Arrays.asList(cyk[j - (k + 1)][k + 1].split(""));             // Procura resultados anteriores com a segunda parte do split
+                        List<String> B = Arrays.asList(cyk[k - i][i].split(" "));                                  // Procura resultados anteriores com a primeira parte do split
+                        List<String> C = Arrays.asList(cyk[j - (k + 1)][k + 1].split(" "));                        // Procura resultados anteriores com a segunda parte do split
 
                         // Passo 5: Produto Cartesiano B x C
                         List<String> BxC = produtoCartesiano(B, C);
-                        //System.out.print(BxC + " ");
 
                         // Passo 6: Checar se B x C produziu variaveis que existem nas regras
                         for (String variavel : variaveis)
@@ -110,7 +110,8 @@ public class glc {
                                 if (regras.get(variavel).contains(possivelBC)) {
 
                                     // Passo 7: Se existe nas regras -> guardar na matriz simbolos a esquerda das regras
-                                    if(!addVariaveis.toString().contains(variavel)) addVariaveis.append(variavel);
+                                    addVariaveis.append(" ");
+                                    addVariaveis.append(variavel);
                                 }
                     } catch (NullPointerException e){
                         //null pointer: Não há nenhuma variável neste local da matriz
@@ -122,10 +123,11 @@ public class glc {
                     else {
                         cyk[tamSubstr - 1][i] = cyk[tamSubstr - 1][i] + temp;
 
-                        // Retira variáveis repetidas
-                        StringBuilder sb = new StringBuilder();
-                        cyk[tamSubstr - 1][i].chars().distinct().forEach(c -> sb.append((char) c));
-                        cyk[tamSubstr - 1][i] = sb.toString();
+                        Set<String> tiraDuplicatas = new HashSet<>(Arrays.asList(cyk[tamSubstr - 1][i].split(" ")));
+
+                        cyk[tamSubstr - 1][i] = "";
+                        for(String elemento : tiraDuplicatas)
+                            cyk[tamSubstr - 1][i] = cyk[tamSubstr - 1][i] + " " + elemento;
                     }
 
                     addVariaveis.delete( 0, addVariaveis.length());
@@ -137,14 +139,15 @@ public class glc {
         System.out.println("Matriz: ");
         for(int i = 0; i < tamCadeia; i++) {
             for (int j = 0; j < tamCadeia; j++) {
-                if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + "  |  ");                      // Evita valores null na tabela (podendo concatenar)
-                else if (cyk[i][j] == null) System.out.print("x  |  ");
-                else System.out.print("0  |  "); // Faz parte do triangulo, porém é nulo (sem variáveis)
+                if(cyk[i][j] != null && cyk[i][j].equals(" ")) System.out.print("0 | ");
+                else if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + " | ");                      // Evita valores null na tabela (podendo concatenar)
+                else if (cyk[i][j] == null) System.out.print("x | ");
+                else System.out.print("0 | "); // Faz parte do triangulo, porém é nulo (sem variáveis)
             }
             System.out.println();
         }
 
-        List<String> S = Arrays.asList(cyk[tamCadeia - 1][0].split(""));
+        List<String> S = Arrays.asList(cyk[tamCadeia - 1][0].split(" "));
         if(S.contains(inicial)) return 1;
         return 0;
     }
@@ -153,8 +156,10 @@ public class glc {
         List<String> BxC = new ArrayList<>();
 
         for(String b : B)
-            for(String c : C)
+            for(String c : C) {
+                //System.out.println("b: " + b + " ; c: " + c);
                 BxC.add(b + c);
+            }
 
         return BxC;
     }
