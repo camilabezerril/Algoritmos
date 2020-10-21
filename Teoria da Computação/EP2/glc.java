@@ -57,7 +57,7 @@ public class glc {
             int nCadeias = Integer.parseInt(ler.nextLine());
 
             //Abrindo só pra escrever número de cadeias
-            try(FileWriter fw = new FileWriter("out-tabela.txt", true); //true: escrever sem sobreescrever
+            try(FileWriter fw = new FileWriter("out-tabela.txt", false); //true: escrever sem sobreescrever
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw))
             {
@@ -119,14 +119,15 @@ public class glc {
                                 if (regras.get(variavel).contains(possivelBC)) {
 
                                     // Passo 7: Se existe nas regras -> guardar na matriz simbolos a esquerda das regras
-                                    addVariaveis.append(" ");
                                     addVariaveis.append(variavel);
+                                    addVariaveis.append(" ");
                                 }
                     } catch (NullPointerException e){
                         //null pointer: Não há nenhuma variável neste local da matriz
                     }
 
                     String temp = addVariaveis.toString();
+                    addVariaveis.delete( 0, addVariaveis.length()); // reutilizar
 
                     if(cyk[tamSubstr - 1][i] == null) cyk[tamSubstr - 1][i] = temp;
                     else {
@@ -134,9 +135,11 @@ public class glc {
 
                         Set<String> tiraDuplicatas = new HashSet<>(Arrays.asList(cyk[tamSubstr - 1][i].split(" ")));
 
-                        cyk[tamSubstr - 1][i] = "";
-                        for(String elemento : tiraDuplicatas)
-                            cyk[tamSubstr - 1][i] = cyk[tamSubstr - 1][i] + " " + elemento;
+                        for(String elemento : tiraDuplicatas) {
+                            addVariaveis.append(elemento);
+                            addVariaveis.append(" ");
+                        }
+                        cyk[tamSubstr - 1][i] = addVariaveis.toString();
                     }
                     addVariaveis.delete( 0, addVariaveis.length());
                 }
