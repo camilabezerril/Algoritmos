@@ -76,8 +76,10 @@ public class glc {
     }
 
     public static int iniciarCYK(List<String> cadeia){
-        if(cadeia.get(0).equals("&") && regras.get(inicial).contains("&")) return 1;
-        else if((cadeia.get(0).equals("&"))) return 0;
+        if(cadeia.get(0).equals("&")){
+            if(regras.get(inicial).contains("&")) return 1;
+            else return 0;
+        }
 
         int tamCadeia = cadeia.size();
         cyk = new String[tamCadeia][tamCadeia];
