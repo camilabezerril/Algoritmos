@@ -159,7 +159,7 @@ public class glc {
         System.out.println("Matriz: ");
         for(int i = tamCadeia - 1; i > -1; i--) {
             for (int j = 0; j < tamCadeia; j++) {
-                if(cyk[i][j] != null && cyk[i][j].equals(" ")) System.out.print("0 | "); // TALVEZ DESNECESARIOOOOOOOOOO
+                if(cyk[i][j] != null && cyk[i][j].equals(" ")) System.out.print("0 | ");
                 else if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + " | ");
                 else if (cyk[i][j] == null) System.out.print("x | ");
                 else System.out.print("0 | "); // Faz parte do triangulo, porém é nulo (sem variáveis)
