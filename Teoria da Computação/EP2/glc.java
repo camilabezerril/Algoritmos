@@ -18,9 +18,11 @@ public class glc {
     public static void lerGlc(){
         try {
             Scanner ler = new Scanner(new FileReader(new File("inp-glc.txt")));
+            Scanner lerCadeias = new Scanner(new FileReader(new File("inp-cadeias.txt")));
+
+            ler.nextLine(); // linha q dirá quantas gramáticas serão lidas = desnecessária devido ao while
 
             while(ler.hasNextLine()){
-                //ler.nextLine(); --> // linha q dirá quantas gramáticas serão lidas = desnecessária devido ao while
                 String[] cabecalho = ler.nextLine().split(" ");
 
                 nVariaveis = Integer.parseInt(cabecalho[0]);
@@ -41,37 +43,25 @@ public class glc {
 
                     regras.get(regraAtual.get(0)).add(simbolos);
                 }
-                System.out.println(regras);
-                testarCadeias();
-            }
+                System.out.println("\n" + regras);
+                testarCadeias(lerCadeias);
 
+                regras.clear();
+            }
         } catch(IOException e){
             e.printStackTrace();
         }
     }
 
-    public static void testarCadeias(){
-        try {
-            Scanner ler = new Scanner(new FileReader(new File("inp-cadeias.txt")));
+    public static void testarCadeias(Scanner lerCadeias) {
+        int nCadeias = Integer.parseInt(lerCadeias.nextLine());
+        boolean fim = false;
 
-            int nCadeias = Integer.parseInt(ler.nextLine());
+        for (int i = 0; i < nCadeias; i++) {
+            List<String> cadeia = Arrays.asList(lerCadeias.nextLine().split(" "));
 
-            //Abrindo só pra escrever número de cadeias
-            try(FileWriter fw = new FileWriter("out-tabela.txt", false); //true: escrever sem sobreescrever
-                BufferedWriter bw = new BufferedWriter(fw);
-                PrintWriter out = new PrintWriter(bw))
-            {
-                out.println(nCadeias);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            for(int i = 0; i < nCadeias; i++){
-                List<String> cadeia = Arrays.asList(ler.nextLine().split(" "));
-                escreverResultados(iniciarCYK(cadeia), cadeia);
-            }
-        } catch(IOException e){
-            e.printStackTrace();
+            if(i == (nCadeias - 1)) fim = true;
+            escreverResultados(iniciarCYK(cadeia), fim);
         }
     }
 
@@ -102,8 +92,8 @@ public class glc {
         for(int tamSubstr = 2; tamSubstr < tamCadeia + 1; tamSubstr++){       // Tamanho das substrings
 
             // Passo: 2: Definir o inicio da substring atual
-            for(int i = 0; i < tamCadeia - tamSubstr + 1; i++){                       // Avança 1 para ler nova substring (cadeia.get(i) -> inicio)
-                int j = i + tamSubstr - 1;                                // Posição do final desta nova substring (para saber até onde ler)
+            for(int i = 0; i < tamCadeia - tamSubstr + 1; i++){               // Avança 1 para ler nova substring (cadeia.get(i) -> inicio)
+                int j = i + tamSubstr - 1;                                    // Posição do final desta nova substring (para saber até onde ler)
 
                 // Passo: 3: Splitar substring atual
                 for(int k = i; k < j; k++){
@@ -149,17 +139,7 @@ public class glc {
             }
         }
 
-        System.out.println();
-        System.out.println("Matriz: ");
-        for(int i = tamCadeia - 1; i > -1; i--) {
-            for (int j = 0; j < tamCadeia; j++) {
-                if(cyk[i][j] != null && cyk[i][j].equals(" ")) System.out.print("0 | ");
-                else if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + " | ");                      // Evita valores null na tabela (podendo concatenar)
-                else if (cyk[i][j] == null) System.out.print("x | ");
-                else System.out.print("0 | "); // Faz parte do triangulo, porém é nulo (sem variáveis)
-            }
-            System.out.println();
-        }
+        imprimirMatriz(tamCadeia);
 
         List<String> S = Arrays.asList(cyk[tamCadeia - 1][0].split(" "));
         if(S.contains(inicial)) return 1;
@@ -174,31 +154,27 @@ public class glc {
         return BxC;
     }
 
-    public static void escreverResultados(int resultado, List<String> cadeia){
+    public static void imprimirMatriz(int tamCadeia){
+        System.out.println();
+        System.out.println("Matriz: ");
+        for(int i = tamCadeia - 1; i > -1; i--) {
+            for (int j = 0; j < tamCadeia; j++) {
+                if(cyk[i][j] != null && cyk[i][j].equals(" ")) System.out.print("0 | "); // TALVEZ DESNECESARIOOOOOOOOOO
+                else if(cyk[i][j] != null && cyk[i][j].length() > 0) System.out.print(cyk[i][j] + " | ");
+                else if (cyk[i][j] == null) System.out.print("x | ");
+                else System.out.print("0 | "); // Faz parte do triangulo, porém é nulo (sem variáveis)
+            }
+            System.out.println();
+        }
+    }
+
+    public static void escreverResultados(int resultado, boolean fim){
         try(FileWriter fw = new FileWriter("out-status.txt", true); //true: escrever sem sobreescrever
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter out = new PrintWriter(bw))
         {
             out.print(resultado + " ");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try(FileWriter fw = new FileWriter("out-tabela.txt", true); //true: escrever sem sobreescrever
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter out = new PrintWriter(bw))
-        {
-            if(cadeia.get(0).equals("&")) out.println("&");
-            else {
-            for(String simbolo : cadeia)
-                out.print(simbolo + " ");
-
-            out.println();
-
-            for(int i = 0; i < cadeia.size(); i++)
-                for (int j = 0; j < cadeia.size(); j++)
-                       if(cyk[i][j] != null) out.println(i + " " + j + " " + cyk[i][j]);
-            }
+            if(fim) out.println();
         } catch (IOException e) {
             e.printStackTrace();
         }
