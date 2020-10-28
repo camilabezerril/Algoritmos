@@ -27,7 +27,6 @@ main:
 	# tamanho do vetor resultante da ordenação: $s3
 	# quantidade de caracteres lidos na entrada: $s4
 	# buffer ascii com números ordenados: $s5
-	# ordenação a ser utilizada: $s6
 
 	# Lê entradas do usuário
 	jal entradaUsuario
@@ -76,7 +75,7 @@ entradaUsuario:
 		lb 	$t0, 0($t2)  			# carrega um byte do buffer
 		beq 	$t0, 10, foundChar		
 	
-		addi 	$t2, $t2, 1      		# incrementa endereço do buffer (vai pra prox numero)
+		addi 	$t2, $t2, 1      		# incrementa endereço do buffer (vai pra prox letra)
 		j 	corrigirIn
 
 	foundChar:
@@ -193,7 +192,7 @@ finalizarBuffer_In:
 # --------------------------------- INICIA ORDENAÇÃO -------------------------------------- #	
 ordena:
 	beq 	$a3, $zero, iniciarSelection
-	beq 	$a3, 1, quickSort	
+	beq 	$a3, 1, iniciarQuick	
 
 # ------------------------------------ SELECTION SORT ------------------------------------- #
 
@@ -272,130 +271,131 @@ fimSelection:
 
 	jr 	$ra
 	
-# ----------------------------------- QUICK SORT - INCOMPLETO AINDA ---------------------------------- #
+# ------------------------------------- QUICK SORT -------------------------------------- #
+# pivot = $t0
 
-quickSort:	
-	subi 	$sp, $sp, 20
-	sw 	$ra, 16($sp)
-	sw 	$fp, 12($sp)	
-	sw 	$a0, 8($sp)			# Numeros (vetor)		
-	sw 	$a1, 4($sp)			# Inicio			
-	sw 	$a2, 0($sp)			# Fim			
-	move 	$fp, $sp
+iniciarQuick:
+	subi $sp, $sp, 36
+	sw $ra, 32($sp)
+	sw $t7, 28($sp)
+	sw $t6, 24($sp)
+	sw $t5, 20($sp)
+	sw $t4, 16($sp)
+	sw $t3, 12($sp)
+	sw $t2, 8($sp)
+	sw $t1, 4($sp)
+	sw $t0, 0($sp)
+
+	subi	$a2, $a2, 1				# Subtrai 1 para contar vetor do 0
 	
-	slt 	$t1, $a1, $a2			# se inicio < fim = 1
-	beq 	$t1, $zero, fimQuick		# se inicio >= fim, fimQuick
-	
-	jal 	particionar
-	add 	$t0, $v0, $zero			# pivot_index = particionar
-	
-	add	$t2, $a2, $zero			# Salva fim antes da recursão
-	subi	$a2, $t2, 1			# novo fim = pivot - 1
 	jal 	quickSort
-	
-	add	$a2, $t2, $zero			# Restaura fim
-	subi	$a1, $t0, 1			# novo inicio = pivot + 1
-	jal	quickSort
+	j 	finalizarQuick
 
-particionar:
-	subi 	$sp, $sp, 36
-	sw 	$ra, 32($sp)			# particionar chama troca, portanto salvar ra
-	sw 	$fp, 28($sp)
-	sw	$a3, 24($sp)		
-	sw	$a1, 20($sp)			# arg são reutilizados em troca
-	sw	$t0, 16($sp)
-	sw	$t1, 12($sp)
-	sw	$t2, 8($sp)
-	sw	$t3, 4($sp)
-	sw	$t4, 0($sp)			
-	move 	$fp, $sp
+quickSort: 
+	subi 	$sp, $sp, 16				 
+	sw 	$ra, 12($sp)
+	sw 	$a2, 8($sp)
+	sw 	$a1, 4($sp)
+	sw 	$a0, ($sp)
 	
-	sll	$t0, $a2, 2			
-	add	$t0, $a0, $t0			# numeros[fim]
-	lw	$t0, 0($t0)			# pivot = numeros[fim]
+	bge 	$a1, $a2, retorna 			# inicio >= fim? -> se sim, retorna
 	
-	subi	$t1, $a1, 1			# i = inicio - 1
-	add	$t2, $a1, $zero			# j = inicio
+	jal 	particionar 
 	
-	for:
-		beq 	$t2, $a2, fimFor		# j = fim?
+	subi 	$a2, $v0, 1				# novo fim = pivot_index - 1
+	jal 	quickSort 				
 		
-		sll	$t4, $t2, 2			
-		add	$t4, $a0, $t4			# numeros[j]
-		lw	$t4, 0($t4)			# valor de numeros[j]
-		
-		slt	$t4, $t4, $t0			# numeros[j] < pivot?
-		beq	$t4, $zero, maior		# Se numeros[j] > pivot -> maior
-		
-		addi 	$t1, $t1, 1			# i++
-		
-		add	$a1, $t1, $zero			# arg1 = i --> para função troca
-		add	$a3, $t2, $zero			# arg3 = j --> para função troca
-		jal 	trocaQuick
-		
-		maior:
-		add	$t2, $t2, 1			# j++
-		
-		j	for
+	lw 	$a2, 8($sp)				# Carrega novamente a2 para novo quick			
+	addi 	$a1, $v0, 1				# novo inicio = pivot_index + 1
+	jal 	quickSort 				
 	
-fimFor:
-	add 	$a1, $t1, 1				# arg2 = i + 1
-	add	$a3, $a2, $zero				# arg3 = fim
-	jal 	trocaQuick
-	
-	addi 	$v0, $t1, 1				# retorna i + 1
-	
-	lw 	$t4, 0($sp)
-	lw 	$t3, 4($sp)
-	lw 	$t2, 8($sp)
-	lw 	$t1, 12($sp)
-	lw 	$t0, 16($sp)
-	lw 	$a1, 20($sp)
-	lw 	$a3, 24($sp)
-	lw 	$fp, 28($sp)
-	lw 	$ra, 32($sp)
-	addi 	$sp, $sp, 36
-	
-	jr $ra
-	
-trocaQuick:
-	subi 	$sp, $sp, 16
-	sw	$t0, 12($sp)			
-	sw	$t1, 8($sp)
-	sw	$t2, 4($sp)
-	sw	$t3, 0($sp)		
+retorna: 
+	lw 	$a0,($sp)
+	lw 	$a1, 4($sp)
+	lw 	$a2, 8($sp)
+	lw 	$ra, 12($sp)
+	addi 	$sp, $sp, 16	
+	jr 	$ra 	 
 
-	sll	$t1, $a1, 2			# arg1 * 4
-	add	$t1, $a0, $t1			# numeros[arg1]
+particionar: 
+	subi 	$sp, $sp, 16				
+	sw 	$a0,($sp)
+	sw 	$a1, 4($sp)
+	sw 	$a2, 8($sp)
+	sw 	$ra, 12($sp)
 	
-	sll	$t0, $a3, 2			# arg3 * 4
-	add	$t0, $a0, $t0			# numeros[arg3]
+	sll 	$t0, $a1, 2				
+	add 	$t0, $t0, $a0				# numeros[inicio]
+	lw 	$t0,($t0)				# pivot = numeros[inicio]
 	
-	lw	$t2, 0($t1)			# valor de numeros[arg1]
-	lw	$t3, 0($t0)			# valor de numeros[arg3]
-	sw	$t2, 0($t0)			
-	sw	$t3, 0($t1)
+	move 	$t1, $a1				# i = inicio
+	addi 	$t2, $a1, 1				# j = inicio + 1
+	
+for: 
+	lw 	$a2, 8($sp)				# carrega a2 de novo, caso ele tenha sido modificado (entrou no if)	
+	bgt 	$t2, $a2, continue 			# j > fim? se sim -> continue
 				
-	lw $t3, 0($sp)
-	lw $t2, 4($sp)
-	lw $t1, 8($sp)
-	lw $t0, 12($sp)
-	addi $sp, $sp, 16
+	sll 	$t3, $t2, 2			
+	add 	$t3, $t3, $a0				# numeros[j]
+	lw 	$t3,($t3)				# carrega valor de numeros[j]
 	
-	jr $ra
+	bge 	$t3, $t0, maior				# numeros[j] < pivot? se não -> maior
 	
-fimQuick:
+	addi 	$t1, $t1, 1				# i++
+					
+	move 	$a1, $t1				# arg1 = i
+	move 	$a2, $t2				# arg2 = j
+	jal 	trocaQuick 
+	
+	maior: 
+	addi 	$t2, $t2, 1				# j++
+	
+	j 	for 
+
+continue: 
+	lw 	$a1, 4($sp)				# agr1 = inicio
+	move 	$a2, $t1				# arg2 = i
+	jal 	trocaQuick 			
+	
+	move 	$v0, $t1				# retorna i
+	
+	lw 	$a0,($sp)				 
+	lw 	$a1, 4($sp)
+	lw 	$a2, 8($sp)
+	lw 	$ra, 12($sp)
+	addi 	$sp, $sp, 16	
+	jr 	$ra 
+	
+trocaQuick: 
+	sll 	$t4, $a1, 2 	
+	add 	$t4, $a0, $t4				# numeros[arg1]
+	
+	sll 	$t5, $a2, 2		
+	add 	$t5, $a0, $t5				# numeros[arg3]
+	
+	lw 	$t6, 0($t4)				# valor de numeros[arg1]
+	lw 	$t7, 0($t5)				# valor de numeros[arg2]
+	sw 	$t6, 0($t5)		
+	sw 	$t7, 0($t4)		
+
+	jr 	$ra
+	
+finalizarQuick:
 	la 	$s0, numeros
 	la	$s0, ($a0)			# salva array ordenado em $s0
 
-	lw 	$a2, 0($sp)
-	lw 	$a1, 4($sp)
-	lw 	$a0, 8($sp)
-	lw 	$fp, 12($sp)
-	lw 	$ra, 16($sp)
-	addi 	$sp, $sp, 20
+	lw 	$t0, 0($sp)
+	lw 	$t1, 4($sp)
+	lw 	$t2, 8($sp)
+	lw 	$t3, 12($sp)
+	lw 	$t4, 16($sp)
+	lw 	$t5, 20($sp)
+	lw 	$t6, 24($sp)
+	lw 	$t7, 28($sp)
+	lw	$ra, 32($sp)
+	addi 	$sp, $sp, 36
 	
-	jr $ra
+	jr	$ra
 
 # ---------------------------- CONVERTE VETOR ORDENADO INT -> STR -------------------------- #
 
